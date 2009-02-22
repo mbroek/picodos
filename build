@@ -1,0 +1,53 @@
+#!/bin/sh
+#
+# Build a PICODOS system disk for the C1P.
+#
+# Michiel Broek.
+
+RED='\e[1;31m'
+GREEN='\e[1;32m'
+BLUE='\e[1;34m'
+CYAN='\e[1;36m'
+NC='\e[0m'
+
+
+make_dos() {
+    echo -e "${CYAN}** Creating PICODOS system ...${NC}"
+
+    tpasm -P 6502 -l picodos.prn -o intel picodos.hex picodos.asm
+    rc=$?
+
+    if [ "$rc" == "0" ]; then
+	hex2bin -e img picodos.hex  | grep address
+	rm -f picodos.hex
+	echo -e "${CYAN}** Created PICODOS system."
+    else
+	echo -e "${RED}tpasm error $rc"
+    fi
+
+    echo -e "${NC}"
+}
+
+
+make_disk() {
+    echo ""
+    echo -n "Writing disk image"
+    rm -f PICODOS_v1.1_C1P.sssd
+    dd if=PICODOS_v1.1_C1P.sssd.in of=start.img bs=1 count=3 2>/dev/null
+    dd if=PICODOS_v1.1_C1P.sssd.in of=rest.img bs=1 skip=2051 2>/dev/null
+    cat start.img picodos.img rest.img >> PICODOS_v1.1_C1P.sssd
+    rm -f start.img rest.img
+}
+
+echo -e ${GREEN}
+echo "==================================================="
+echo ""
+echo "             Creating PICODOS system"
+echo ""
+echo "==================================================="
+echo -e "${NC}"
+
+# Make system
+make_dos
+make_disk
+echo ", PICODOS system generated"

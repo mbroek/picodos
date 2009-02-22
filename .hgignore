@@ -1,0 +1,4 @@
+syntax: glob
+PICODOS_v1.1_C1P.sssd
+*.prn
+*.img
